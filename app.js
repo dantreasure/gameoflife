@@ -5,42 +5,72 @@
 
 window.main = function () {
   //window.requestAnimationFrame( main );
-
   //iterate through each cell
+  window.setInterval(main, 5000);
   $("li").each(function(idx,el){
   	//pass the cell to a neighbour checker => boolean
-  	if(neighbourChecker(el)){
-  		//if true add class of live
-  		$(el).addClass("live");
-  	}
-  })
+  	neighbourChecker(el);
+  });
+  render();
 };
 
 function neighbourChecker(cell){
 	var count = 0;
 	var row = getRow(cell);
 	var column = getColumn(cell);
+	var fate = 'dead';
 
-	count += topRow(row -1);
-
-	console.log("COUNT\n", count);
-	// count += middleRow();
-	// count += bottomRow();
-
-
-	//switch
-}
-
-function getRow(cell){
-	return $(cell).parent().first().data("row");
-}
-
-function getColumn(cell){
-	return $(cell).data("cell");
-}
-
-function topRow(row){
-	if(row === 0){
-		return 0
+	function getRow(cell){
+		return parseInt($(cell).parent().attr("data-row"));
 	}
+
+	function getColumn(cell){
+		return parseInt($(cell).attr("data-cell"));
+	}
+
+	function rowCheck(row, col, fullRow){
+		var cells = $("ul").filter('[data-row="' + row + '"]').children();
+		debugger;
+		if($(cells[(col - 2)]).data("state")=='live'){
+			count++
+		}
+		if($(cells[(col - 1)]).data("state")=='live' && fullRow){
+			count++
+		}
+		if ($(cells[col]).data("state")=='live'){
+			count++
+		}
+	}
+
+	rowCheck((row -1),column,true);
+	rowCheck(row, column);
+	rowCheck((row + 1),column, true);
+
+	//live cell rule checks
+
+	if($(cell).data('state') === 'live'){
+		if(2 > count){
+			fate = 'dead';
+		} else if(count === 2 || count === 3){
+			fate = 'live';
+		} else if (count > 3){
+			fate = 'dead';
+		}
+	//dead cell rule check
+	} else{
+		if(count === 3){
+			fate = 'live';
+		}
+	}
+	$(cell).attr('data-fate', fate);
 }
+
+function render(){
+	$("li").each(function(idx, el){
+		console.log($(el).data('fate'))
+		$(el).attr('data-state', $(el).data('fate'));
+		$(el).removeAttr('data-fate');
+	})
+}
+
+
